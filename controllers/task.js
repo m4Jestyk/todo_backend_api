@@ -1,7 +1,9 @@
+import errorHandler from "../middlewares/error.js";
 import { Task } from "../models/task.js";
 
 export const newTask = async (req, res, next)=> {
-    const {title, description} = req.body;
+    try {
+        const {title, description} = req.body;
 
     await Task.create({
         title,
@@ -14,26 +16,30 @@ export const newTask = async (req, res, next)=> {
         message: `task added`,
         taskDetails: `title: ${title}, desc: ${description}`,
     })
+    } catch (error) {
+        next(error)
+    }
 };
 
 export const getMyTasks =async (req, res, next)=>{
-
+    try {
+        
     const user = req.user;
 
-    console.log("working 1")
-
     const tasks = await Task.find({user: user._id});
-
-    console.log("Wokring 2")
 
     res.status(200).json({
         success: true,
         tasks, 
     })
+    } catch (error) {
+        next(error)
+    }
 };
 
 export const updateTask = async (req, res, next) =>{
-
+    try {
+        
     const {id} = req.params;
 
     const task = await Task.findById(id);
@@ -46,17 +52,18 @@ export const updateTask = async (req, res, next) =>{
         success: true,
         message: "Task updated",
     })
+    } catch (error) {
+        next(error)
+    }
 }
 
 export const deleteTask = async (req, res, next) =>{
-
+    try {
+        
     const task = await Task.findById(req.params.id);
 
     if(!task){
-        res.status(404).json({
-            success: false,
-            message: "Task not found",
-        })
+        return next(new errorHandler("Task not found", 404))
     }
 
     await task.deleteOne();
@@ -66,5 +73,8 @@ export const deleteTask = async (req, res, next) =>{
         message: "Task deleted",
     })
 
+    } catch (error) {
+        next(error)
+    }
 
 }
